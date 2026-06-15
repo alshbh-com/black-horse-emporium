@@ -30,9 +30,8 @@ export const Route = createFileRoute("/")({
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(homeQuery),
   component: Home,
-  errorComponent: ({ reset }) => (
-    <div className="p-10 text-center"><button onClick={reset}>حاول تاني</button></div>
-  ),
+  component: Home,
+
 });
 
 function Home() {
