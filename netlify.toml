@@ -1,0 +1,20 @@
+[build]
+  command = "bun run build"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NETLIFY = "true"
+
+# TanStack Start يبني SSR handler عبر nitro preset=netlify
+# الـ functions/handler يتولّد تلقائيًا داخل .netlify
+[functions]
+  directory = ".netlify/functions-internal"
+  node_bundler = "esbuild"
+
+# fallback لأي مسار غير موجود كأصل ثابت → SSR handler
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server"
+  status = 200
+  force = false
