@@ -1,7 +1,6 @@
 [build]
   command = "bun run build"
-  publish = "dist/public"
+  publish = "dist/client"
 
 [build.environment]
   NODE_VERSION = "20"
-  NITRO_PRESET = "netlify"
