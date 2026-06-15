@@ -12,8 +12,7 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  nitro: {
-    // اختر preset مناسب لـ Netlify عند البناء عليها
-    preset: process.env.NETLIFY ? "netlify" : undefined,
-  },
+  // Force nitro to run on external CI (e.g. Netlify) with the netlify preset.
+  // In the Lovable sandbox this is overridden to Cloudflare automatically.
+  nitro: { preset: "netlify" },
 });
