@@ -8,12 +8,17 @@ import ProductCard, { type ProductLite } from "@/components/site/ProductCard";
 const homeQuery = queryOptions({
   queryKey: ["home"],
   queryFn: async () => {
-    const [pRes, cRes] = await Promise.all([
-      supabase.from("products").select("id,name,price,offer_price,image_url,is_offer").eq("is_active", true).order("created_at", { ascending: false }),
-      supabase.from("categories").select("id,name,image_url").eq("is_active", true).order("display_order"),
-    ]);
-    return { products: (pRes.data ?? []) as ProductLite[], categories: cRes.data ?? [] };
+    try {
+      const [pRes, cRes] = await Promise.all([
+        supabase.from("products").select("id,name,price,offer_price,image_url,is_offer").eq("is_active", true).order("created_at", { ascending: false }),
+        supabase.from("categories").select("id,name,image_url").eq("is_active", true).order("display_order"),
+      ]);
+      return { products: (pRes.data ?? []) as ProductLite[], categories: cRes.data ?? [] };
+    } catch {
+      return { products: [] as ProductLite[], categories: [] as Array<{ id: string; name: string; image_url: string | null }> };
+    }
   },
+
 });
 
 export const Route = createFileRoute("/")({
@@ -25,10 +30,8 @@ export const Route = createFileRoute("/")({
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(homeQuery),
   component: Home,
-  errorComponent: ({ reset }) => (
-    <div className="p-10 text-center"><button onClick={reset}>حاول تاني</button></div>
-  ),
 });
+
 
 function Home() {
   const { data } = useSuspenseQuery(homeQuery);
