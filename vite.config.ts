@@ -12,8 +12,5 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  nitro: {
-    // اختر preset مناسب لـ Netlify عند البناء عليها
-    preset: process.env.NETLIFY ? "netlify" : undefined,
-  },
+  // Nitro preset auto-detected via NITRO_PRESET env var (set in netlify.toml)
 });
