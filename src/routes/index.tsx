@@ -8,12 +8,17 @@ import ProductCard, { type ProductLite } from "@/components/site/ProductCard";
 const homeQuery = queryOptions({
   queryKey: ["home"],
   queryFn: async () => {
-    const [pRes, cRes] = await Promise.all([
-      supabase.from("products").select("id,name,price,offer_price,image_url,is_offer").eq("is_active", true).order("created_at", { ascending: false }),
-      supabase.from("categories").select("id,name,image_url").eq("is_active", true).order("display_order"),
-    ]);
-    return { products: (pRes.data ?? []) as ProductLite[], categories: cRes.data ?? [] };
+    try {
+      const [pRes, cRes] = await Promise.all([
+        supabase.from("products").select("id,name,price,offer_price,image_url,is_offer").eq("is_active", true).order("created_at", { ascending: false }),
+        supabase.from("categories").select("id,name,image_url").eq("is_active", true).order("display_order"),
+      ]);
+      return { products: (pRes.data ?? []) as ProductLite[], categories: cRes.data ?? [] };
+    } catch {
+      return { products: [] as ProductLite[], categories: [] as Array<{ id: string; name: string; image_url: string | null }> };
+    }
   },
+
 });
 
 export const Route = createFileRoute("/")({
