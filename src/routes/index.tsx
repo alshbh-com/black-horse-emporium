@@ -30,9 +30,8 @@ export const Route = createFileRoute("/")({
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(homeQuery),
   component: Home,
-  component: Home,
-
 });
+
 
 function Home() {
   const { data } = useSuspenseQuery(homeQuery);
