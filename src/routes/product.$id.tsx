@@ -123,35 +123,51 @@ function ProductPage() {
             </div>
             {p.description && <p className="mt-4 text-muted-foreground leading-relaxed">{p.description}</p>}
 
-            {sizes.length > 0 && (
-              <div className="mt-8">
-                <div className="text-sm font-semibold text-foreground">المقاس</div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {sizes.map((s) => (
-                    <button key={s} onClick={() => setSize(s)} className={`min-w-12 rounded-full border px-4 py-2 text-sm font-medium transition ${size===s ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:border-primary"}`}>{s}</button>
-                  ))}
-                </div>
+            <div className="mt-8 flex items-center gap-3">
+              <span className="text-sm font-semibold text-foreground">الكمية</span>
+              <div className="inline-flex items-center rounded-full border border-border bg-card">
+                <button onClick={() => updateQty(qty-1)} className="h-11 w-11 text-lg">−</button>
+                <span className="w-8 text-center font-semibold">{qty}</span>
+                <button onClick={() => updateQty(qty+1)} className="h-11 w-11 text-lg">+</button>
               </div>
-            )}
-            {colors.length > 0 && (
-              <div className="mt-6">
-                <div className="text-sm font-semibold text-foreground">اللون</div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {colors.map((c) => (
-                    <button key={c} onClick={() => setColor(c)} className={`rounded-full border px-4 py-2 text-sm font-medium transition inline-flex items-center gap-2 ${color===c ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:border-primary"}`}>
-                      {color===c && <Check className="h-3.5 w-3.5" />} {c}
-                    </button>
-                  ))}
-                </div>
+            </div>
+
+            {(sizes.length > 0 || colors.length > 0) && (
+              <div className="mt-6 space-y-4">
+                {Array.from({ length: qty }).map((_, idx) => {
+                  const sel = selections[idx] ?? { size: null, color: null };
+                  return (
+                    <div key={idx} className="rounded-3xl border border-border bg-card p-4">
+                      <div className="text-sm font-bold text-foreground">القطعة {idx + 1}</div>
+                      {sizes.length > 0 && (
+                        <div className="mt-3">
+                          <div className="text-xs font-semibold text-muted-foreground">المقاس</div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {sizes.map((s) => (
+                              <button key={s} onClick={() => setPieceSize(idx, s)} className={`min-w-12 rounded-full border px-4 py-2 text-sm font-medium transition ${sel.size===s ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:border-primary"}`}>{s}</button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {colors.length > 0 && (
+                        <div className="mt-3">
+                          <div className="text-xs font-semibold text-muted-foreground">اللون</div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {colors.map((c) => (
+                              <button key={c} onClick={() => setPieceColor(idx, c)} className={`rounded-full border px-4 py-2 text-sm font-medium transition inline-flex items-center gap-2 ${sel.color===c ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:border-primary"}`}>
+                                {sel.color===c && <Check className="h-3.5 w-3.5" />} {c}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
-            <div className="mt-8 flex items-center gap-3">
-              <div className="inline-flex items-center rounded-full border border-border bg-card">
-                <button onClick={() => setQty(Math.max(1, qty-1))} className="h-11 w-11 text-lg">−</button>
-                <span className="w-8 text-center font-semibold">{qty}</span>
-                <button onClick={() => setQty(qty+1)} className="h-11 w-11 text-lg">+</button>
-              </div>
+            <div className="mt-6 flex items-center gap-3">
               <button onClick={() => addToCart(false)} className="flex-1 inline-flex h-12 items-center justify-center gap-2 rounded-full border border-primary bg-card text-sm font-semibold text-foreground hover:bg-muted">
                 <ShoppingBag className="h-4 w-4" /> أضف للسلة
               </button>
@@ -159,6 +175,7 @@ function ProductPage() {
                 اشتري الآن
               </button>
             </div>
+
 
             <div className="mt-8 grid grid-cols-3 gap-3 text-center">
               {[{icon:Truck,t:"شحن 24-48س"},{icon:ShieldCheck,t:"دفع عند الاستلام"},{icon:RotateCcw,t:"استبدال 15 يوم"}].map((f) => (
