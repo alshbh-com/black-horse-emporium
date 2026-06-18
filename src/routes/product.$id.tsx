@@ -34,9 +34,8 @@ function ProductPage() {
   const p = data.product;
   const gallery = [p?.image_url, ...data.images.map((i: any) => i.image_url)].filter(Boolean) as string[];
   const [active, setActive] = useState(0);
-  const [size, setSize] = useState<string | null>(null);
-  const [color, setColor] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
+  const [selections, setSelections] = useState<Array<{ size: string | null; color: string | null }>>([{ size: null, color: null }]);
 
   if (!p) return <div className="p-10 text-center">المنتج غير موجود</div>;
 
@@ -45,13 +44,46 @@ function ProductPage() {
   const sizes: string[] = p.size_options ?? [];
   const colors: string[] = p.color_options ?? [];
 
-  const addToCart = (goCheckout = false) => {
-    if (sizes.length > 0 && !size) { toast.error("اختر المقاس أولاً"); return; }
-    if (colors.length > 0 && !color) { toast.error("اختر اللون أولاً"); return; }
-    cart.add({
-      productId: p.id, name: p.name, price, quantity: qty,
-      image: gallery[0] ?? null, size, color,
+  const updateQty = (n: number) => {
+    const nq = Math.max(1, n);
+    setQty(nq);
+    setSelections((prev) => {
+      const next = [...prev];
+      if (nq > next.length) {
+        for (let i = next.length; i < nq; i++) next.push({ size: null, color: null });
+      } else {
+        next.length = nq;
+      }
+      return next;
     });
+  };
+
+  const setPieceSize = (idx: number, s: string) =>
+    setSelections((prev) => {
+      const next = prev.map((x, i) => i === idx ? { ...x, size: s } : x);
+      while (next.length < qty) next.push({ size: null, color: null });
+      return next;
+    });
+  const setPieceColor = (idx: number, c: string) =>
+    setSelections((prev) => {
+      const next = prev.map((x, i) => i === idx ? { ...x, color: c } : x);
+      while (next.length < qty) next.push({ size: null, color: null });
+      return next;
+    });
+
+  const addToCart = (goCheckout = false) => {
+    for (let i = 0; i < qty; i++) {
+      const sel = selections[i] ?? { size: null, color: null };
+      if (sizes.length > 0 && !sel.size) { toast.error(`اختر المقاس للقطعة ${i + 1}`); return; }
+      if (colors.length > 0 && !sel.color) { toast.error(`اختر اللون للقطعة ${i + 1}`); return; }
+    }
+    for (let i = 0; i < qty; i++) {
+      const sel = selections[i];
+      cart.add({
+        productId: p.id, name: p.name, price, quantity: 1,
+        image: gallery[0] ?? null, size: sel.size, color: sel.color,
+      });
+    }
     toast.success("أضيف إلى السلة");
     if (goCheckout) navigate({ to: "/checkout" });
   };
