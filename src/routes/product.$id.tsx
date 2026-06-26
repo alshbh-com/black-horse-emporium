@@ -40,9 +40,34 @@ function ProductPage() {
   if (!p) return <div className="p-10 text-center">المنتج غير موجود</div>;
 
   const hasOffer = p.is_offer && p.offer_price != null && p.offer_price < p.price;
-  const price = hasOffer ? Number(p.offer_price) : Number(p.price);
+  const basePrice = hasOffer ? Number(p.offer_price) : Number(p.price);
   const sizes: string[] = p.size_options ?? [];
   const colors: string[] = p.color_options ?? [];
+
+  // Quantity price tiers: [{qty, price}] — price is the TOTAL for that qty bundle
+  const rawTiers: Array<{ qty: number; price: number }> = Array.isArray((p as any).quantity_price_tiers)
+    ? ((p as any).quantity_price_tiers as any[])
+        .map((t) => ({ qty: Number(t?.qty), price: Number(t?.price) }))
+        .filter((t) => Number.isFinite(t.qty) && t.qty > 0 && Number.isFinite(t.price) && t.price >= 0)
+        .sort((a, b) => a.qty - b.qty)
+    : [];
+  const tiers = rawTiers.length > 0 ? rawTiers : [{ qty: 1, price: basePrice }];
+  const hasTiers = rawTiers.length > 0;
+
+  // Compute total for any quantity by greedily applying the largest tier ≤ remaining, repeating last tier.
+  const computeTotal = (n: number): number => {
+    let remaining = n;
+    let total = 0;
+    while (remaining > 0) {
+      const tier = [...tiers].reverse().find((t) => t.qty <= remaining) ?? tiers[0];
+      total += tier.price;
+      remaining -= tier.qty;
+    }
+    return total;
+  };
+
+  const totalPrice = computeTotal(qty);
+  const unitPrice = totalPrice / qty;
 
   const updateQty = (n: number) => {
     const nq = Math.max(1, n);
