@@ -105,7 +105,7 @@ function ProductPage() {
     for (let i = 0; i < qty; i++) {
       const sel = selections[i];
       cart.add({
-        productId: p.id, name: p.name, price, quantity: 1,
+        productId: p.id, name: p.name, price: unitPrice, quantity: 1,
         image: gallery[0] ?? null, size: sel.size, color: sel.color,
       });
     }
