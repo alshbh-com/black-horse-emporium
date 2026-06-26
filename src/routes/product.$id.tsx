@@ -175,40 +175,75 @@ function ProductPage() {
               </div>
             </div>
 
-            {(sizes.length > 0 || colors.length > 0) && (
-              <div className="mt-6 space-y-4">
-                {Array.from({ length: qty }).map((_, idx) => {
-                  const sel = selections[idx] ?? { size: null, color: null };
-                  return (
-                    <div key={idx} className="rounded-3xl border border-border bg-card p-4">
-                      <div className="text-sm font-bold text-foreground">القطعة {idx + 1}</div>
-                      {sizes.length > 0 && (
-                        <div className="mt-3">
-                          <div className="text-xs font-semibold text-muted-foreground">المقاس</div>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {sizes.map((s) => (
-                              <button key={s} onClick={() => setPieceSize(idx, s)} className={`min-w-12 rounded-full border px-4 py-2 text-sm font-medium transition ${sel.size===s ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:border-primary"}`}>{s}</button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {colors.length > 0 && (
-                        <div className="mt-3">
-                          <div className="text-xs font-semibold text-muted-foreground">اللون</div>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {colors.map((c) => (
-                              <button key={c} onClick={() => setPieceColor(idx, c)} className={`rounded-full border px-4 py-2 text-sm font-medium transition inline-flex items-center gap-2 ${sel.color===c ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:border-primary"}`}>
-                                {sel.color===c && <Check className="h-3.5 w-3.5" />} {c}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+            {(sizes.length > 0 || colors.length > 0) && (() => {
+              const isComplete = (s: { size: string | null; color: string | null }) =>
+                (sizes.length === 0 || !!s.size) && (colors.length === 0 || !!s.color);
+              const completedCount = selections.slice(0, qty).filter(isComplete).length;
+              return (
+                <div className="mt-6">
+                  <div className="flex items-center justify-between rounded-2xl border border-border bg-muted/40 px-4 py-3">
+                    <div className="text-sm font-semibold text-foreground">
+                      اختر تفاصيل كل قطعة <span className="text-muted-foreground">({qty} {qty === 1 ? "قطعة" : "قطع"})</span>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                    <div className={`text-xs font-bold ${completedCount === qty ? "text-emerald-600" : "text-amber-600"}`}>
+                      {completedCount} / {qty} مكتملة
+                    </div>
+                  </div>
+
+                  <div className="mt-3 space-y-4">
+                    {Array.from({ length: qty }).map((_, idx) => {
+                      const sel = selections[idx] ?? { size: null, color: null };
+                      const done = isComplete(sel);
+                      return (
+                        <div key={idx} className={`rounded-3xl border bg-card p-4 transition ${done ? "border-emerald-500/60" : "border-amber-500/60"}`}>
+                          <div className="flex items-center justify-between gap-3 flex-wrap">
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${done ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"}`}>{idx + 1}</span>
+                              <span className="text-sm font-bold text-foreground">القطعة {idx + 1}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs">
+                              {sizes.length > 0 && (
+                                <span className={`rounded-full px-2 py-1 font-semibold ${sel.size ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                                  المقاس: {sel.size ?? "—"}
+                                </span>
+                              )}
+                              {colors.length > 0 && (
+                                <span className={`rounded-full px-2 py-1 font-semibold ${sel.color ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                                  اللون: {sel.color ?? "—"}
+                                </span>
+                              )}
+                              {done && <Check className="h-4 w-4 text-emerald-600" />}
+                            </div>
+                          </div>
+                          {sizes.length > 0 && (
+                            <div className="mt-3">
+                              <div className="text-xs font-semibold text-muted-foreground">المقاس</div>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {sizes.map((s) => (
+                                  <button key={s} onClick={() => setPieceSize(idx, s)} className={`min-w-12 rounded-full border px-4 py-2 text-sm font-medium transition ${sel.size===s ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:border-primary"}`}>{s}</button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {colors.length > 0 && (
+                            <div className="mt-3">
+                              <div className="text-xs font-semibold text-muted-foreground">اللون</div>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {colors.map((c) => (
+                                  <button key={c} onClick={() => setPieceColor(idx, c)} className={`rounded-full border px-4 py-2 text-sm font-medium transition inline-flex items-center gap-2 ${sel.color===c ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:border-primary"}`}>
+                                    {sel.color===c && <Check className="h-3.5 w-3.5" />} {c}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className="mt-6 flex items-center gap-3">
               <button onClick={() => addToCart(false)} className="flex-1 inline-flex h-12 items-center justify-center gap-2 rounded-full border border-primary bg-card text-sm font-semibold text-foreground hover:bg-muted">
