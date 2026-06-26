@@ -1,0 +1,2 @@
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS quantity_price_tiers jsonb;
+COMMENT ON COLUMN public.products.quantity_price_tiers IS 'Quantity pricing tiers: [{"qty":1,"price":200},{"qty":2,"price":350},{"qty":3,"price":500}]';
