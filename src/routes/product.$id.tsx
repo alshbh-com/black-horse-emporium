@@ -40,9 +40,34 @@ function ProductPage() {
   if (!p) return <div className="p-10 text-center">المنتج غير موجود</div>;
 
   const hasOffer = p.is_offer && p.offer_price != null && p.offer_price < p.price;
-  const price = hasOffer ? Number(p.offer_price) : Number(p.price);
+  const basePrice = hasOffer ? Number(p.offer_price) : Number(p.price);
   const sizes: string[] = p.size_options ?? [];
   const colors: string[] = p.color_options ?? [];
+
+  // Quantity price tiers: [{qty, price}] — price is the TOTAL for that qty bundle
+  const rawTiers: Array<{ qty: number; price: number }> = Array.isArray((p as any).quantity_price_tiers)
+    ? ((p as any).quantity_price_tiers as any[])
+        .map((t) => ({ qty: Number(t?.qty), price: Number(t?.price) }))
+        .filter((t) => Number.isFinite(t.qty) && t.qty > 0 && Number.isFinite(t.price) && t.price >= 0)
+        .sort((a, b) => a.qty - b.qty)
+    : [];
+  const tiers = rawTiers.length > 0 ? rawTiers : [{ qty: 1, price: basePrice }];
+  const hasTiers = rawTiers.length > 0;
+
+  // Compute total for any quantity by greedily applying the largest tier ≤ remaining, repeating last tier.
+  const computeTotal = (n: number): number => {
+    let remaining = n;
+    let total = 0;
+    while (remaining > 0) {
+      const tier = [...tiers].reverse().find((t) => t.qty <= remaining) ?? tiers[0];
+      total += tier.price;
+      remaining -= tier.qty;
+    }
+    return total;
+  };
+
+  const totalPrice = computeTotal(qty);
+  const unitPrice = totalPrice / qty;
 
   const updateQty = (n: number) => {
     const nq = Math.max(1, n);
@@ -80,7 +105,7 @@ function ProductPage() {
     for (let i = 0; i < qty; i++) {
       const sel = selections[i];
       cart.add({
-        productId: p.id, name: p.name, price, quantity: 1,
+        productId: p.id, name: p.name, price: unitPrice, quantity: 1,
         image: gallery[0] ?? null, size: sel.size, color: sel.color,
       });
     }
@@ -118,17 +143,35 @@ function ProductPage() {
             {hasOffer && <span className="inline-flex rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">عرض خاص</span>}
             <h1 className="mt-3 font-display text-4xl sm:text-5xl text-foreground">{p.name}</h1>
             <div className="mt-4 flex items-center gap-3">
-              <span className="font-display text-3xl text-foreground">{price} ج.م</span>
+              <span className="font-display text-3xl text-foreground">{basePrice} ج.م</span>
               {hasOffer && <span className="text-lg text-muted-foreground line-through">{p.price} ج.م</span>}
             </div>
             {p.description && <p className="mt-4 text-muted-foreground leading-relaxed">{p.description}</p>}
 
-            <div className="mt-8 flex items-center gap-3">
+            {hasTiers && (
+              <div className="mt-5 rounded-3xl border border-accent/40 bg-accent/5 p-4">
+                <div className="text-sm font-bold text-foreground">عروض الكمية</div>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {tiers.map((t) => (
+                    <div key={t.qty} className={`rounded-2xl border px-3 py-2 text-center text-xs ${qty >= t.qty ? "border-primary bg-primary/5" : "border-border bg-background"}`}>
+                      <div className="font-bold text-foreground">{t.qty} {t.qty === 1 ? "قطعة" : t.qty === 2 ? "قطعتين" : "قطع"}</div>
+                      <div className="text-muted-foreground">{t.price} ج.م</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 flex items-center gap-3">
               <span className="text-sm font-semibold text-foreground">الكمية</span>
               <div className="inline-flex items-center rounded-full border border-border bg-card">
                 <button onClick={() => updateQty(qty-1)} className="h-11 w-11 text-lg">−</button>
                 <span className="w-8 text-center font-semibold">{qty}</span>
                 <button onClick={() => updateQty(qty+1)} className="h-11 w-11 text-lg">+</button>
+              </div>
+              <div className="ms-auto text-end">
+                <div className="text-xs text-muted-foreground">الإجمالي</div>
+                <div className="font-display text-2xl text-foreground">{totalPrice} ج.م</div>
               </div>
             </div>
 

@@ -820,6 +820,7 @@ export type Database = {
           name: string
           offer_price: number | null
           price: number
+          quantity_price_tiers: Json | null
           quantity_pricing: Json | null
           size_options: string[] | null
           stock: number
@@ -838,6 +839,7 @@ export type Database = {
           name: string
           offer_price?: number | null
           price?: number
+          quantity_price_tiers?: Json | null
           quantity_pricing?: Json | null
           size_options?: string[] | null
           stock?: number
@@ -856,6 +858,7 @@ export type Database = {
           name?: string
           offer_price?: number | null
           price?: number
+          quantity_price_tiers?: Json | null
           quantity_pricing?: Json | null
           size_options?: string[] | null
           stock?: number
